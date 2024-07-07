@@ -1,4 +1,5 @@
 import { pool } from "../db.js";
+import { validateUser } from "../schemas/userSchema.js";
 
 export const getUsers = async (req, res) => {
     const { rows } = await pool.query("SELECT * FROM users");
@@ -20,6 +21,13 @@ export const getUserById = async (req, res) => {
 };
 
 export const createUser = async (req, res) => {
+    const result = await validateUser(req.body); // Se hace la validación
+    if (result.error) {
+        return res
+            .status(422)
+            .json({ error: JSON.parse(result.error.message) });
+    }
+
     try {
         const { name, email, password } = req.body;
 
