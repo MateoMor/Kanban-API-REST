@@ -1,5 +1,8 @@
+import bcrypt from "bcrypt";
+
 import { pool } from "../db.js";
 import { validateUser } from "../schemas/userSchema.js";
+import { SALT_ROUNDS } from "../config.js";
 
 export const getUsers = async (req, res) => {
     const { rows } = await pool.query("SELECT * FROM users");
@@ -28,12 +31,14 @@ export const createUser = async (req, res) => {
             .json({ error: JSON.parse(result.error.message) });
     }
 
+    const hashedPassword = await bcrypt.hash(req.body.password, SALT_ROUNDS);
+
     try {
         const { name, email, password } = req.body;
 
         const { rows } = await pool.query(
             "INSERT INTO users (user_name, email, password) VALUES ($1, $2, $3) RETURNING *",
-            [name, email, password]
+            [name, email, hashedPassword]
         );
 
         return res.json(rows[0]);
@@ -43,6 +48,23 @@ export const createUser = async (req, res) => {
 
         return res.status(500).json({ message: error.message });
     }
+};
+
+export const login = async (req, res) => {
+    const { email, password } = req.body;
+    const {rows} = await pool.query("SELECT * FROM users WHERE email = $1", [
+        email,
+    ]);
+
+    if (rows.length === 0)
+        return res.status(404).json({ message: "user not found" });
+
+    const validPassword = await bcrypt.compare(password, rows[0].password);
+    if (!validPassword) return res.sendStatus(401);
+
+    const {password : _,  ...publicUser} = rows[0] // Le quitamos la propiedad password al objeto del usuario
+
+    return res.json(publicUser);
 };
 
 export const deleteUser = async (req, res) => {

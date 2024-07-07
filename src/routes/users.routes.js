@@ -5,9 +5,16 @@ import {
     createUser,
     deleteUser,
     updateUser,
+    login,
 } from "../controllers/users.controllers.js";
 
 const router = Router();
+
+router.post("/login", login)
+
+router.post("/register", createUser)
+
+router.post("/logout", (req, res) => {})
 
 router.get("/users", getUsers);
 router.get("/users/:id", getUserById);
