@@ -4,4 +4,4 @@
 DELETE FROM sesion WHERE sesion_id = 1;
 
 -- Eliminar la descripción con description_id
-DELETE FROM descriptions WHERE description_id = 5;
+DELETE FROM tasks WHERE task_id = 5;
