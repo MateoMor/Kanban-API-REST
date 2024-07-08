@@ -116,6 +116,33 @@ export const createSessionTable = async (req, res) => {
     res.json(rows[0]);
 };
 
+export const deleteSessionTable = async (req, res) => {
+    const user = req.session.user;
+    if (!user) return res.sendStatus(401);
+
+    const { id } = req.params;
+    const { rowCount } = await pool.query(
+        "DELETE FROM sesion WHERE sesion_id = $1",
+        [id]
+    );
+
+    if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
+
+    res.sendStatus(204); // Eliminación exitosa
+}
+
+export const deleteTask = async (req, res) => {
+    const { id } = req.params;
+    const { rowCount } = await pool.query(
+        "DELETE FROM tasks WHERE task_id = $1",
+        [id]
+    );
+
+    if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
+
+    res.sendStatus(204); // Eliminación exitosa
+}
+
 export const createTask = async (req, res) => {
     const user = req.session.user;
     console.log("Sesión actual:", req.session.user);
