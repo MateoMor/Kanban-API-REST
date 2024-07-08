@@ -2,7 +2,11 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 import { pool } from "../db.js";
-import { validateUser, validateSession } from "../schemas/shemas.js";
+import {
+    validateUser,
+    validateSession,
+    validateTask,
+} from "../schemas/shemas.js";
 import { SALT_ROUNDS, SECRET_KEY } from "../config.js";
 
 export const getUsers = async (req, res) => {
@@ -73,7 +77,7 @@ export const login = async (req, res) => {
         { user_id: user.user_id, email: user.email, name: user.user_name },
         SECRET_KEY,
         {
-            expiresIn: "1h",
+            expiresIn: "3h",
         }
     );
 
@@ -95,11 +99,6 @@ export const createSessionTable = async (req, res) => {
     const user = req.session.user;
     if (!user) return res.sendStatus(401);
 
-    const { sesion_name } = req.body;
-    if (!sesion_name) {
-        return res.status(400).json({ error: "sesion_name es requerido" });
-    }
-
     const result = await validateSession(req.body);
     if (result.error) {
         return res
@@ -107,9 +106,33 @@ export const createSessionTable = async (req, res) => {
             .json({ error: JSON.parse(result.error.message) });
     }
 
+    const { sesion_name } = req.body;
+
     const { rows } = await pool.query(
         "INSERT INTO sesion (sesion_name, user_id) VALUES ($1, $2) RETURNING *",
         [sesion_name, user.user_id]
+    );
+
+    res.json(rows[0]);
+};
+
+export const createTask = async (req, res) => {
+    const user = req.session.user;
+    console.log("Sesión actual:", req.session.user);
+    if (!user) return res.sendStatus(401);
+
+    const result = await validateTask(req.body);
+    if (result.error) {
+        return res
+            .status(422)
+            .json({ error: JSON.parse(result.error.message) });
+    }
+
+    const { task_name, task_description, sesion_id } = req.body;
+
+    const { rows } = await pool.query(
+        "INSERT INTO tasks (task_name, task_description, sesion_id) VALUES ($1, $2, $3) RETURNING *",
+        [task_name, task_description, sesion_id]
     );
 
     res.json(rows[0]);

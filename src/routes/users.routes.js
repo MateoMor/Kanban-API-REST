@@ -8,6 +8,7 @@ import {
     login,
     logout,
     createSessionTable,
+    createTask,
 } from "../controllers/users.controllers.js";
 
 const router = Router();
@@ -17,6 +18,7 @@ router.post("/register", createUser);
 router.post("/logout", logout);
 
 router.post("/createSession", createSessionTable);
+router.post("/createTask", createTask);
 
 router.get("/users", getUsers);
 router.get("/users/:id", getUserById);
