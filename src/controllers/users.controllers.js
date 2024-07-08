@@ -271,3 +271,22 @@ export const updateUser = async (req, res) => {
 
     return res.json(rows[0]);
 };
+
+export const listSessionTasks = async (req, res) => {
+    console.log("Hello workd")
+    const { id } = req.params;
+    const { rows } = await pool.query(
+        "SELECT * FROM tasks WHERE sesion_id = $1",
+        [id]
+    );
+    res.json(rows);
+};
+
+export const listUserSessions = async (req, res) => {
+    const { id } = req.params;
+    const { rows } = await pool.query(
+        "SELECT * FROM sesion WHERE user_id = $1",
+        [id]
+    );
+    res.json(rows);
+};

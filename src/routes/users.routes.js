@@ -14,6 +14,8 @@ import {
     updateSessionTable,
     updateTask,
     moveTask,
+    listSessionTasks,
+    listUserSessions,
 } from "../controllers/users.controllers.js";
 
 const router = Router();
@@ -37,6 +39,10 @@ router.patch("/updateTask/:id", updateTask);
 
 /* Metódo para mover un task de una sesión a otra */
 router.patch("/moveTask/:id", moveTask);
+
+/* Metodos de consulta */
+router.get("/getTasksFromSession/:id", listSessionTasks);
+router.get("/getSessionsFromUser/:id", listUserSessions);
 
 /* Métodos que pueden ser utiles más tarde */
 router.get("/users", getUsers);
