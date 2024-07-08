@@ -1,0 +1,178 @@
+{
+	"info": {
+		"_postman_id": "f889318d-d68e-4398-8116-875fb5dec5e4",
+		"name": "Kanban-API-REST",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "36729210"
+	},
+	"item": [
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Mirai\", \n  \"email\": \"alguien@utp.edu.co\", \n  \"password\": \"unaclave\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url_host}}/login"
+			},
+			"response": []
+		},
+		{
+			"name": "register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Genova\", \n  \"email\": \"correo@utp.edu.co\", \n  \"password\": \"contraseña\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url_host}}/register"
+			},
+			"response": []
+		},
+		{
+			"name": "logout",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": "{{url_host}}/logout"
+			},
+			"response": []
+		},
+		{
+			"name": "createSessionTable",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"sesion_name\": \"Contenido de una nueva sesión\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url_host}}/createSession"
+			},
+			"response": []
+		},
+		{
+			"name": "createTask",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"task_name\": \"nombre de la tarea\",\n  \"task_description\": \"una Descripcion\",\n  \"sesion_id\" : 1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url_host}}/createTask"
+			},
+			"response": []
+		},
+		{
+			"name": "deleteUser",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "{{url_host}}/users/18"
+			},
+			"response": []
+		},
+		{
+			"name": "deleteSessionTable",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "{{url_host}}/deleteSession/11"
+			},
+			"response": []
+		},
+		{
+			"name": "deleteTask",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "{{url_host}}/deleteTask/10"
+			},
+			"response": []
+		},
+		{
+			"name": "updateSession",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"sesion_name\": \"Añadir un hola mundo\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url_host}}/updateSession/1"
+			},
+			"response": []
+		},
+		{
+			"name": "updateTask",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"task_name\": \"Actualizando una tarea\",\n  \"task_description\": \"Esta tarea ha sido actualizada\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url_host}}/updateTask/5"
+			},
+			"response": []
+		},
+		{
+			"name": "moveTask",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"destination_sesion_id\": \"1\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url_host}}/moveTask/5"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "url_host",
+			"value": "http://localhost:4000"
+		}
+	]
+}
