@@ -9,64 +9,6 @@ import {
 } from "../schemas/shemas.js";
 import { SALT_ROUNDS, SECRET_KEY } from "../config.js";
 
-export const getUsers = async (req, res) => {
-    const { rows } = await pool.query("SELECT * FROM users");
-    res.json(rows);
-};
-
-export const getUserById = async (req, res) => {
-    const { id } = req.params;
-
-    const { rows } = await pool.query(
-        "SELECT * FROM users WHERE user_id = $1",
-        [id]
-    );
-
-    if (rows.length === 0)
-        return res.status(404).json({ message: "user not found" });
-
-    res.json(rows[0]);
-};
-
-export const createUser = async (req, res) => {
-    const result = await validateUser(req.body); // Se hace la validación
-    if (result.error) {
-        return res
-            .status(422)
-            .json({ error: JSON.parse(result.error.message) });
-    }
-
-    const hashedPassword = await bcrypt.hash(req.body.password, SALT_ROUNDS);
-
-    try {
-        const { name, email, password } = req.body;
-
-        const { rows } = await pool.query(
-            "INSERT INTO users (user_name, email, password) VALUES ($1, $2, $3) RETURNING *",
-            [name, email, hashedPassword]
-        );
-
-        return res.json(rows[0]);
-    } catch (error) {
-        if (error.code === "23505")
-            return res.status(409).json({ message: "email already exists" });
-
-        return res.status(500).json({ message: error.message });
-    }
-};
-
-export const updateUser = async (req, res) => {
-    const { id } = req.params;
-    const data = req.body;
-
-    const { rows } = await pool.query(
-        "UPDATE users SET user_name = $1, email = $2, password = $3 WHERE user_id = $4 RETURNING *",
-        [data.name, data.email, data.password, id]
-    );
-
-    return res.json(rows[0]);
-};
-
 export const login = async (req, res) => {
     const { email, password } = req.body;
     const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [
@@ -105,6 +47,33 @@ export const logout = (req, res) => {
     res.sendStatus(204);
 };
 
+export const createUser = async (req, res) => {
+    const result = await validateUser(req.body); // Se hace la validación
+    if (result.error) {
+        return res
+            .status(422)
+            .json({ error: JSON.parse(result.error.message) });
+    }
+
+    const hashedPassword = await bcrypt.hash(req.body.password, SALT_ROUNDS);
+
+    try {
+        const { name, email, password } = req.body;
+
+        const { rows } = await pool.query(
+            "INSERT INTO users (user_name, email, password) VALUES ($1, $2, $3) RETURNING *",
+            [name, email, hashedPassword]
+        );
+
+        return res.json(rows[0]);
+    } catch (error) {
+        if (error.code === "23505")
+            return res.status(409).json({ message: "email already exists" });
+
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 export const createSessionTable = async (req, res) => {
     const user = req.session.user;
     if (!user) return res.sendStatus(401);
@@ -124,21 +93,6 @@ export const createSessionTable = async (req, res) => {
     );
 
     res.json(rows[0]);
-};
-
-export const deleteSessionTable = async (req, res) => {
-    const user = req.session.user;
-    if (!user) return res.sendStatus(401);
-
-    const { id } = req.params;
-    const { rowCount } = await pool.query(
-        "DELETE FROM sesion WHERE sesion_id = $1",
-        [id]
-    );
-
-    if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
-
-    res.sendStatus(204); // Eliminación exitosa
 };
 
 export const createTask = async (req, res) => {
@@ -162,18 +116,6 @@ export const createTask = async (req, res) => {
     res.json(rows[0]);
 };
 
-export const deleteTask = async (req, res) => {
-    const { id } = req.params;
-    const { rowCount } = await pool.query(
-        "DELETE FROM tasks WHERE task_id = $1",
-        [id]
-    );
-
-    if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
-
-    res.sendStatus(204); // Eliminación exitosa
-};
-
 export const deleteUser = async (req, res) => {
     const { id } = req.params;
     const { rowCount } = await pool.query(
@@ -185,6 +127,33 @@ export const deleteUser = async (req, res) => {
         return res.status(404).json({ message: "user not found" });
 
     return res.sendStatus(204);
+};
+
+export const deleteSessionTable = async (req, res) => {
+    const user = req.session.user;
+    if (!user) return res.sendStatus(401);
+
+    const { id } = req.params;
+    const { rowCount } = await pool.query(
+        "DELETE FROM sesion WHERE sesion_id = $1",
+        [id]
+    );
+
+    if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
+
+    res.sendStatus(204); // Eliminación exitosa
+};
+
+export const deleteTask = async (req, res) => {
+    const { id } = req.params;
+    const { rowCount } = await pool.query(
+        "DELETE FROM tasks WHERE task_id = $1",
+        [id]
+    );
+
+    if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
+
+    res.sendStatus(204); // Eliminación exitosa
 };
 
 export const updateSessionTable = async (req, res) => {
@@ -211,15 +180,15 @@ export const updateSessionTable = async (req, res) => {
 
 export const updateTask = async (req, res) => {
     const user = req.session.user;
-    if (!user) return res.sendStatus(401);  
+    if (!user) return res.sendStatus(401);
 
     const { id } = req.params;
     const { task_name, task_description } = req.body;
 
-    let sesion_id = id 
+    let sesion_id = id;
     sesion_id = parseInt(sesion_id);
 
-    const result = await validateTask({...req.body, sesion_id});
+    const result = await validateTask({ ...req.body, sesion_id });
     if (result.error) {
         return res
             .status(422)
@@ -232,4 +201,72 @@ export const updateTask = async (req, res) => {
     );
 
     return res.json(rows[0]);
-}
+};
+
+export const moveTask = async (req, res) => {
+    try {
+        const user = req.session.user;
+        if (!user) return res.sendStatus(401);
+
+        const { id } = req.params;
+        const { destination_sesion_id } = req.body;
+
+        // Verificar si la sesión de destino existe
+        const sessionCheck = await pool.query(
+            "SELECT 1 FROM sesion WHERE sesion_id = $1",
+            [destination_sesion_id]
+        );
+
+        if (sessionCheck.rowCount === 0) {
+            return res
+                .status(404)
+                .json({ error: "La sesión de destino no existe" });
+        }
+
+        // Actualizar la tarea
+        const { rows } = await pool.query(
+            "UPDATE tasks SET sesion_id = $1 WHERE task_id = $2 RETURNING *",
+            [destination_sesion_id, id]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Tarea no encontrada" });
+        }
+
+        return res.json(rows[0]);
+    } catch (error) {
+        console.error("Error al mover la tarea:", error);
+        return res.status(500).json({ error: "Error interno del servidor" });
+    }
+};
+
+export const getUsers = async (req, res) => {
+    const { rows } = await pool.query("SELECT * FROM users");
+    res.json(rows);
+};
+
+export const getUserById = async (req, res) => {
+    const { id } = req.params;
+
+    const { rows } = await pool.query(
+        "SELECT * FROM users WHERE user_id = $1",
+        [id]
+    );
+
+    if (rows.length === 0)
+        return res.status(404).json({ message: "user not found" });
+
+    res.json(rows[0]);
+};
+
+export const updateUser = async (req, res) => {
+    const { id } = req.params;
+    const data = req.body;
+
+    const { rows } = await pool.query(
+        "UPDATE users SET user_name = $1, email = $2, password = $3 WHERE user_id = $4 RETURNING *",
+        [data.name, data.email, data.password, id]
+    );
+
+    return res.json(rows[0]);
+};

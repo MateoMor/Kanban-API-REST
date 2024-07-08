@@ -13,6 +13,7 @@ import {
     deleteTask,
     updateSessionTable,
     updateTask,
+    moveTask,
 } from "../controllers/users.controllers.js";
 
 const router = Router();
@@ -33,6 +34,9 @@ router.delete("/deleteTask/:id", deleteTask);
 /* Metodos de actualización */
 router.patch("/updateSession/:id", updateSessionTable );
 router.patch("/updateTask/:id", updateTask);
+
+/* Metódo para mover un task de una sesión a otra */
+router.patch("/moveTask/:id", moveTask);
 
 /* Métodos que pueden ser utiles más tarde */
 router.get("/users", getUsers);
