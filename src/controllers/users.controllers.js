@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 import { pool } from "../db.js";
-import { validateUser } from "../schemas/userSchema.js";
+import { validateUser, validateSession } from "../schemas/shemas.js";
 import { SALT_ROUNDS, SECRET_KEY } from "../config.js";
 
 export const getUsers = async (req, res) => {
@@ -53,7 +53,7 @@ export const createUser = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-    console.log("Sesión actual:", req.session.user)
+    console.log("Sesión actual:", req.session.user);
     const { email, password } = req.body;
     const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [
         email,
@@ -89,6 +89,30 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
     res.clearCookie("acces_token");
     res.sendStatus(204);
+};
+
+export const createSessionTable = async (req, res) => {
+    const user = req.session.user;
+    if (!user) return res.sendStatus(401);
+
+    const { sesion_name } = req.body;
+    if (!sesion_name) {
+        return res.status(400).json({ error: "sesion_name es requerido" });
+    }
+
+    const result = await validateSession(req.body);
+    if (result.error) {
+        return res
+            .status(422)
+            .json({ error: JSON.parse(result.error.message) });
+    }
+
+    const { rows } = await pool.query(
+        "INSERT INTO sesion (sesion_name, user_id) VALUES ($1, $2) RETURNING *",
+        [sesion_name, user.user_id]
+    );
+
+    res.json(rows[0]);
 };
 
 export const deleteUser = async (req, res) => {
