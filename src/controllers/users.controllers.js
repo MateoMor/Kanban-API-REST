@@ -58,14 +58,15 @@ export const createUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(req.body.password, SALT_ROUNDS);
 
     try {
-        const { name, email, password } = req.body;
+        const { name, email } = req.body;
 
         const { rows } = await pool.query(
             "INSERT INTO users (user_name, email, password) VALUES ($1, $2, $3) RETURNING *",
             [name, email, hashedPassword]
         );
 
-        return res.json(rows[0]);
+        const { password: _, ...publicUser } = rows[0];
+        res.status(201).json(publicUser);
     } catch (error) {
         if (error.code === "23505")
             return res.status(409).json({ message: "email already exists" });
