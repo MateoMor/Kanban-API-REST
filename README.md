@@ -1,5 +1,21 @@
 # API Documentation
 
+## How to setup
+
+### Configure server
+- Use a database web service of your preference, Example: supabase.com
+- Create a project with postgreSQL as database
+- create a .env as the .env.example and insert your database data there (to run local)
+- run the consultas.sql queries to create the tables
+
+### Configure API service
+- Use your web service of preference. Example: render.com
+- Create a new web service instance and link your project with it
+- insert .env.example variables with the database fields in enviroment variables to connect with database
+- deploy
+
+## Endpoints
+
 ## Authentication Methods
 
 ### Login
