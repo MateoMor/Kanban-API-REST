@@ -10,3 +10,5 @@ export const DB_PORT = process.env.DB_PORT;
 export const PORT = process.env.PORT || 4000;
 
 export const SALT_ROUNDS = 10;
+
+export const SECRET_KEY = process.env.SECRET_KEY

@@ -1,10 +1,12 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 import { pool } from "../db.js";
 import { validateUser } from "../schemas/userSchema.js";
-import { SALT_ROUNDS } from "../config.js";
+import { SALT_ROUNDS, SECRET_KEY } from "../config.js";
 
 export const getUsers = async (req, res) => {
+    console.log("Sesión actual:", req.session.user);
     const { rows } = await pool.query("SELECT * FROM users");
     res.json(rows);
 };
@@ -51,20 +53,42 @@ export const createUser = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+    console.log("Sesión actual:", req.session.user)
     const { email, password } = req.body;
-    const {rows} = await pool.query("SELECT * FROM users WHERE email = $1", [
+    const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [
         email,
     ]);
 
     if (rows.length === 0)
         return res.status(404).json({ message: "user not found" });
 
-    const validPassword = await bcrypt.compare(password, rows[0].password);
+    const user = rows[0];
+
+    const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.sendStatus(401);
 
-    const {password : _,  ...publicUser} = rows[0] // Le quitamos la propiedad password al objeto del usuario
+    const { password: _, ...publicUser } = user; // Le quitamos la propiedad password al objeto del usuario
 
-    return res.json(publicUser);
+    const token = jwt.sign(
+        { user_id: user.user_id, email: user.email, name: user.user_name },
+        SECRET_KEY,
+        {
+            expiresIn: "1h",
+        }
+    );
+
+    return res
+        .cookie("acces_token", token, {
+            httpOnly: true, // Solo se puede acceder a la cookie desde el servidor
+            secure: process.env.NODE_ENV === "production", // Solo funiona con https
+            sameSite: "strict", // Solo se puede acceder desde el mismo sitio
+        })
+        .json(publicUser);
+};
+
+export const logout = (req, res) => {
+    res.clearCookie("acces_token");
+    res.sendStatus(204);
 };
 
 export const deleteUser = async (req, res) => {
