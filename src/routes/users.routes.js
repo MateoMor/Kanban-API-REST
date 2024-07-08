@@ -11,6 +11,8 @@ import {
     createTask,
     deleteSessionTable,
     deleteTask,
+    updateSessionTable,
+    updateTask,
 } from "../controllers/users.controllers.js";
 
 const router = Router();
@@ -27,6 +29,10 @@ router.post("/createTask", createTask);
 /* Métodos de borrado */
 router.delete("/deleteSession/:id", deleteSessionTable);
 router.delete("/deleteTask/:id", deleteTask);
+
+/* Metodos de actualización */
+router.patch("/updateSession/:id", updateSessionTable );
+router.patch("/updateTask/:id", updateTask);
 
 /* Métodos que pueden ser utiles más tarde */
 router.get("/users", getUsers);

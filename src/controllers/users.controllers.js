@@ -10,7 +10,6 @@ import {
 import { SALT_ROUNDS, SECRET_KEY } from "../config.js";
 
 export const getUsers = async (req, res) => {
-    console.log("Sesión actual:", req.session.user);
     const { rows } = await pool.query("SELECT * FROM users");
     res.json(rows);
 };
@@ -56,8 +55,19 @@ export const createUser = async (req, res) => {
     }
 };
 
+export const updateUser = async (req, res) => {
+    const { id } = req.params;
+    const data = req.body;
+
+    const { rows } = await pool.query(
+        "UPDATE users SET user_name = $1, email = $2, password = $3 WHERE user_id = $4 RETURNING *",
+        [data.name, data.email, data.password, id]
+    );
+
+    return res.json(rows[0]);
+};
+
 export const login = async (req, res) => {
-    console.log("Sesión actual:", req.session.user);
     const { email, password } = req.body;
     const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [
         email,
@@ -129,23 +139,10 @@ export const deleteSessionTable = async (req, res) => {
     if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
 
     res.sendStatus(204); // Eliminación exitosa
-}
-
-export const deleteTask = async (req, res) => {
-    const { id } = req.params;
-    const { rowCount } = await pool.query(
-        "DELETE FROM tasks WHERE task_id = $1",
-        [id]
-    );
-
-    if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
-
-    res.sendStatus(204); // Eliminación exitosa
-}
+};
 
 export const createTask = async (req, res) => {
     const user = req.session.user;
-    console.log("Sesión actual:", req.session.user);
     if (!user) return res.sendStatus(401);
 
     const result = await validateTask(req.body);
@@ -165,6 +162,18 @@ export const createTask = async (req, res) => {
     res.json(rows[0]);
 };
 
+export const deleteTask = async (req, res) => {
+    const { id } = req.params;
+    const { rowCount } = await pool.query(
+        "DELETE FROM tasks WHERE task_id = $1",
+        [id]
+    );
+
+    if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
+
+    res.sendStatus(204); // Eliminación exitosa
+};
+
 export const deleteUser = async (req, res) => {
     const { id } = req.params;
     const { rowCount } = await pool.query(
@@ -178,14 +187,49 @@ export const deleteUser = async (req, res) => {
     return res.sendStatus(204);
 };
 
-export const updateUser = async (req, res) => {
+export const updateSessionTable = async (req, res) => {
+    const user = req.session.user;
+    if (!user) return res.sendStatus(401);
+
     const { id } = req.params;
-    const data = req.body;
+    const { sesion_name } = req.body;
+
+    const result = await validateSession(req.body);
+    if (result.error) {
+        return res
+            .status(422)
+            .json({ error: JSON.parse(result.error.message) });
+    }
 
     const { rows } = await pool.query(
-        "UPDATE users SET user_name = $1, email = $2, password = $3 WHERE user_id = $4 RETURNING *",
-        [data.name, data.email, data.password, id]
+        "UPDATE sesion SET sesion_name = $1 WHERE sesion_id = $2 RETURNING *",
+        [sesion_name, id]
     );
 
     return res.json(rows[0]);
 };
+
+export const updateTask = async (req, res) => {
+    const user = req.session.user;
+    if (!user) return res.sendStatus(401);  
+
+    const { id } = req.params;
+    const { task_name, task_description } = req.body;
+
+    let sesion_id = id 
+    sesion_id = parseInt(sesion_id);
+
+    const result = await validateTask({...req.body, sesion_id});
+    if (result.error) {
+        return res
+            .status(422)
+            .json({ error: JSON.parse(result.error.message) });
+    }
+
+    const { rows } = await pool.query(
+        "UPDATE tasks SET task_name = $1, task_description = $2 WHERE task_id = $3 RETURNING *",
+        [task_name, task_description, sesion_id]
+    );
+
+    return res.json(rows[0]);
+}
