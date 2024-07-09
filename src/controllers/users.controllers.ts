@@ -1,15 +1,22 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { Request, Response } from "express";
 
-import { pool } from "../db.js";
+import { pool } from "../db";
 import {
     validateUser,
     validateSession,
     validateTask,
-} from "../schemas/shemas.js";
-import { SALT_ROUNDS, SECRET_KEY } from "../config.js";
+} from "../schemas/shemas";
+import { SALT_ROUNDS, SECRET_KEY } from "../config";
 
-export const login = async (req, res) => {
+declare module 'express' {
+    interface Request {
+      session?: any; // Add session to Request properties
+    }
+  }
+
+export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [
         email,
@@ -42,12 +49,12 @@ export const login = async (req, res) => {
         .json(publicUser);
 };
 
-export const logout = (req, res) => {
+export const logout = (_req: Request, res: Response) => {
     res.clearCookie("acces_token");
     res.sendStatus(204);
 };
 
-export const createUser = async (req, res) => {
+export const createUser = async (req: Request, res: Response) => {
     const result = await validateUser(req.body); // Se hace la validación
     if (result.error) {
         return res
@@ -66,8 +73,8 @@ export const createUser = async (req, res) => {
         );
 
         const { password: _, ...publicUser } = rows[0];
-        res.status(201).json(publicUser);
-    } catch (error) {
+        return res.status(201).json(publicUser);
+    } catch (error: any) {
         if (error.code === "23505")
             return res.status(409).json({ message: "email already exists" });
 
@@ -75,7 +82,7 @@ export const createUser = async (req, res) => {
     }
 };
 
-export const createSessionTable = async (req, res) => {
+export const createSessionTable = async (req: Request, res: Response) => {
     const user = req.session.user;
     if (!user) return res.sendStatus(401);
 
@@ -93,10 +100,10 @@ export const createSessionTable = async (req, res) => {
         [sesion_name, user.user_id]
     );
 
-    res.json(rows[0]);
+    return res.json(rows[0]);
 };
 
-export const createTask = async (req, res) => {
+export const createTask = async (req: Request, res: Response) => {
     const user = req.session.user;
     if (!user) return res.sendStatus(401);
 
@@ -114,10 +121,10 @@ export const createTask = async (req, res) => {
         [task_name, task_description, sesion_id]
     );
 
-    res.json(rows[0]);
+    return res.json(rows[0]);
 };
 
-export const deleteUser = async (req, res) => {
+export const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { rowCount } = await pool.query(
         "DELETE FROM users WHERE user_id = $1",
@@ -130,7 +137,7 @@ export const deleteUser = async (req, res) => {
     return res.sendStatus(204);
 };
 
-export const deleteSessionTable = async (req, res) => {
+export const deleteSessionTable = async (req: Request, res: Response) => {
     const user = req.session.user;
     if (!user) return res.sendStatus(401);
 
@@ -142,10 +149,10 @@ export const deleteSessionTable = async (req, res) => {
 
     if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
 
-    res.sendStatus(204); // Eliminación exitosa
+    return res.sendStatus(204); // Eliminación exitosa
 };
 
-export const deleteTask = async (req, res) => {
+export const deleteTask = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { rowCount } = await pool.query(
         "DELETE FROM tasks WHERE task_id = $1",
@@ -154,10 +161,10 @@ export const deleteTask = async (req, res) => {
 
     if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
 
-    res.sendStatus(204); // Eliminación exitosa
+    return res.sendStatus(204); // Eliminación exitosa
 };
 
-export const updateSessionTable = async (req, res) => {
+export const updateSessionTable = async (req: Request, res: Response) => {
     const user = req.session.user;
     if (!user) return res.sendStatus(401);
 
@@ -179,14 +186,14 @@ export const updateSessionTable = async (req, res) => {
     return res.json(rows[0]);
 };
 
-export const updateTask = async (req, res) => {
+export const updateTask = async (req: Request, res: Response) => {
     const user = req.session.user;
     if (!user) return res.sendStatus(401);
 
     const { id } = req.params;
     const { task_name, task_description } = req.body;
 
-    let sesion_id = id;
+    let sesion_id: any = id;
     sesion_id = parseInt(sesion_id);
 
     const result = await validateTask({ ...req.body, sesion_id });
@@ -204,7 +211,7 @@ export const updateTask = async (req, res) => {
     return res.json(rows[0]);
 };
 
-export const moveTask = async (req, res) => {
+export const moveTask = async (req: Request, res: Response) => {
     try {
         const user = req.session.user;
         if (!user) return res.sendStatus(401);
@@ -241,12 +248,12 @@ export const moveTask = async (req, res) => {
     }
 };
 
-export const getUsers = async (req, res) => {
+export const getUsers = async (_req: Request, res: Response) => {
     const { rows } = await pool.query("SELECT * FROM users");
     res.json(rows);
 };
 
-export const getUserById = async (req, res) => {
+export const getUserById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const { rows } = await pool.query(
@@ -257,10 +264,10 @@ export const getUserById = async (req, res) => {
     if (rows.length === 0)
         return res.status(404).json({ message: "user not found" });
 
-    res.json(rows[0]);
+    return res.json(rows[0]);
 };
 
-export const updateUser = async (req, res) => {
+export const updateUser = async (req: Request, res: Response) => {
     const { id } = req.params;
     const data = req.body;
 
@@ -272,7 +279,7 @@ export const updateUser = async (req, res) => {
     return res.json(rows[0]);
 };
 
-export const listSessionTasks = async (req, res) => {
+export const listSessionTasks = async (req: Request, res: Response) => {
     console.log("Hello workd")
     const { id } = req.params;
     const { rows } = await pool.query(
@@ -282,7 +289,7 @@ export const listSessionTasks = async (req, res) => {
     res.json(rows);
 };
 
-export const listUserSessions = async (req, res) => {
+export const listUserSessions = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { rows } = await pool.query(
         "SELECT * FROM sesion WHERE user_id = $1",

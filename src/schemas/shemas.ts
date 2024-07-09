@@ -6,7 +6,7 @@ const userSchema = z.object({
     password: z.string(), // Puedes agregar más restricciones al password si es necesario
 });
 
-export const validateUser = (user) => {
+export const validateUser = (user: any) => {
     return userSchema.safeParseAsync(user);
 };
 
@@ -14,7 +14,7 @@ const sessionSchema = z.object({
     sesion_name: z.string().max(50),
 });
 
-export const validateSession = (session) => {
+export const validateSession = (session: any) => {
     return sessionSchema.safeParseAsync(session);
 };
 
@@ -24,6 +24,6 @@ const taskSchema = z.object({
     sesion_id: z.number(),
 });
 
-export const validateTask = (task) => {
+export const validateTask = (task: any) => {
     return taskSchema.safeParseAsync(task);
 };

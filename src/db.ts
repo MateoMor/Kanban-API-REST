@@ -5,7 +5,7 @@ import {
     DB_PASSWORD,
     DB_PORT,
     DB_USER,
-} from "./config.js";
+} from "./config";
 
 export const pool = new pg.Pool({
     user: DB_USER,

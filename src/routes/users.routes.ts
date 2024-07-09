@@ -16,7 +16,7 @@ import {
     moveTask,
     listSessionTasks,
     listUserSessions,
-} from "../controllers/users.controllers.js";
+} from "../controllers/users.controllers";
 
 const router = Router();
 
