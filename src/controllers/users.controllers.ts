@@ -116,13 +116,29 @@ export const createTask = async (req: Request, res: Response) => {
 
     const { task_name, task_description, sesion_id } = req.body;
 
-    const { rows } = await pool.query(
-        "INSERT INTO tasks (task_name, task_description, sesion_id) VALUES ($1, $2, $3) RETURNING *",
-        [task_name, task_description, sesion_id]
-    );
+    try {
+        // Verificar si la sesión pertenece pedida a modificar pertenece al usuario
+        const { rows: sessions } = await pool.query(
+            "SELECT 1 FROM sesion WHERE sesion_id = $1 AND user_id = $2",
+            [sesion_id, user.user_id]
+        );
 
-    return res.json(rows[0]);
+        if (sessions.length === 0) {
+            return res.status(401).json({ message: "Unauthorized access to session" });
+        }
+
+        // Insertar la tarea
+        const { rows } = await pool.query(
+            "INSERT INTO tasks (task_name, task_description, sesion_id, user_id) VALUES ($1, $2, $3, $4) RETURNING *",
+            [task_name, task_description, sesion_id, user.user_id]
+        );
+
+        return res.status(201).json(rows[0]);
+    } catch (error: any) {
+        return res.status(500).json({ message: error.message });
+    }
 };
+
 
 export const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -142,27 +158,49 @@ export const deleteSessionTable = async (req: Request, res: Response) => {
     if (!user) return res.sendStatus(401);
 
     const { id } = req.params;
-    const { rowCount } = await pool.query(
-        "DELETE FROM sesion WHERE sesion_id = $1",
-        [id]
-    );
 
-    if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
+    try {
+        const { rowCount } = await pool.query(
+            "DELETE FROM sesion WHERE sesion_id = $1 AND user_id = $2",
+            [id, user.user_id]
+        );
 
-    return res.sendStatus(204); // Eliminación exitosa
+        if (rowCount === 0) {
+            return res.sendStatus(404); // No se encontró el recurso
+        }
+
+        return res.sendStatus(204); // Eliminación exitosa
+    } catch (error) {
+        console.error("Error deleting session:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 };
+
 
 export const deleteTask = async (req: Request, res: Response) => {
+    const user = req.session.user;
+    if (!user) return res.sendStatus(401);
+
     const { id } = req.params;
-    const { rowCount } = await pool.query(
-        "DELETE FROM tasks WHERE task_id = $1",
-        [id]
-    );
 
-    if (rowCount === 0) return res.sendStatus(404); // No se encontró el recurso
+    try {
+        // Verificar que la tarea pertenezca al usuario
+        const { rowCount } = await pool.query(
+            "DELETE FROM tasks WHERE task_id = $1 AND user_id = $2",
+            [id, user.user_id]
+        );
 
-    return res.sendStatus(204); // Eliminación exitosa
+        if (rowCount === 0) {
+            return res.sendStatus(404); // No se encontró el recurso
+        }
+
+        return res.sendStatus(204); // Eliminación exitosa
+    } catch (error) {
+        console.error("Error deleting task:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 };
+
 
 export const updateSessionTable = async (req: Request, res: Response) => {
     const user = req.session.user;

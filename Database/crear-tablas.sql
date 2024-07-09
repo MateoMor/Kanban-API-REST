@@ -16,11 +16,13 @@ CREATE TABLE sesion (
     FOREIGN KEY (user_id) REFERENCES users(user_id) -- Referencia a la clave foranea en user_id
 );
 
--- Crear tabla de descripciones
+-- Crear tabla de tareas
 CREATE TABLE tasks (
     task_id SERIAL PRIMARY KEY,
-    task_name VARCHAR(50) NOT NULL, -- El campo debe ser de 50 caracteres o menos
-    task_description TEXT NOT NULL, -- TEXT permite crear guardar datos de datos de tamaño indefinido
+    task_name VARCHAR(50) NOT NULL,
+    task_description TEXT NOT NULL,
+    user_id INTEGER,
     sesion_id INTEGER,
-    FOREIGN KEY (sesion_id) REFERENCES sesion(sesion_id) ON DELETE CASCADE ON UPDATE CASCADE -- Referencia a la clave foranea en sesion_id
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE, -- Clave foránea que referencia a users(user_id)
+    FOREIGN KEY (sesion_id) REFERENCES sesion(sesion_id) ON DELETE CASCADE ON UPDATE CASCADE -- Referencia a la clave foránea en sesion_id
 );
