@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "ce7e8665-f236-450b-a744-b4d183cce4f9",
+		"_postman_id": "f889318d-d68e-4398-8116-875fb5dec5e4",
 		"name": "Kanban-API-REST",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
-		"_exporter_id": "36730837"
+		"_exporter_id": "36729210"
 	},
 	"item": [
 		{
@@ -13,14 +13,14 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"Alguienmas\", \n  \"email\": \"uncorreo@utp.edu.co\", \n  \"password\": \"unaclave\"\n}",
+					"raw": "{\n  \"name\": \"Mirai\", \n  \"email\": \"alguien@utp.edu.co\", \n  \"password\": \"unaclave\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
 						}
 					}
 				},
-				"url": "{{url_host}}/login"
+				"url": "https://kanban-api-rest.onrender.com/login"
 			},
 			"response": []
 		},
@@ -169,7 +169,7 @@
 			"response": []
 		},
 		{
-			"name": "getUserSessions",
+			"name": "getSessions",
 			"request": {
 				"method": "GET",
 				"header": [],
@@ -178,11 +178,10 @@
 			"response": []
 		},
 		{
-			"name": "getTasksFromSession",
+			"name": "getTasks",
 			"request": {
 				"method": "GET",
-				"header": [],
-				"url": "https://kanban-api-rest.onrender.com/getTasksFromSession/1"
+				"header": []
 			},
 			"response": []
 		}
